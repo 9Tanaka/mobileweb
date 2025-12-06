@@ -1,17 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>แนะนำสถานที่ใหม่ - KKU Campus Guide</title>
+    <link rel="stylesheet" href="css/form.css">
 </head>
 <body>
-    <form action="https://api.web3forms.com/submit" method="POST">
-  <input type="hidden" name="access_key" value="1c1a2640-42b8-423d-b1ef-27d53eb59564">
-  <input type="text" name="name" required>
-  <input type="email" name="email" required>
-  <textarea name="message" required></textarea>
-  <button type="submit">Submit</button>
-</form>
+    <div class="form-container">
+        <div class="form-header">
+            <div class="form-icon">📍</div>
+            <h1>แนะนำสถานที่ใหม่</h1>
+            <p>ช่วยเราเพิ่มสถานที่น่าสนใจใน มข. กันเถอะ!</p>
+        </div>
+
+        <div id="successMessage" class="success-message">
+            ✅ ส่งข้อมูลสำเร็จ! ขอบคุณสำหรับการแนะนำสถานที่ใหม่
+        </div>
+
+        <form id="suggestionForm" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="1c1a2640-42b8-423d-b1ef-27d53eb59564">
+            <input type="hidden" name="subject" value="แนะนำสถานที่ใหม่จาก KKU Campus Guide">
+            
+            <div class="form-group">
+                <label for="place_name">
+                    ชื่อสถานที่ <span class="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="place_name" 
+                    name="place_name" 
+                    placeholder="เช่น อาคารปฏิบัติการกลาง" 
+                    required
+                    maxlength="100"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="description">
+                    รายละเอียด <span class="required">*</span>
+                </label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    placeholder="บอกเราเกี่ยวกับสถานที่นี้ เช่น ที่ตั้ง จุดเด่น บรรยากาศ หรือกิจกรรมที่สามารถทำได้"
+                    required
+                    maxlength="500"
+                ></textarea>
+                <span class="helper-text">อธิบายสถานที่นี้ให้น่าสนใจ (สูงสุด 500 ตัวอักษร)</span>
+            </div>
+
+            <div class="form-group">
+                <label for="image_url">
+                    ลิงค์รูปภาพ (URL) <span class="required">*</span>
+                </label>
+                <input 
+                    type="url" 
+                    id="image_url" 
+                    name="image_url" 
+                    placeholder="https://example.com/image.jpg" 
+                    required
+                >
+                <span class="helper-text">ใส่ลิงค์รูปภาพของสถานที่ (เช่น จาก Google Photos, Imgur)</span>
+            </div>
+
+            <div class="form-group">
+                <label for="contact_email">
+                    อีเมลของคุณ <span class="required">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="contact_email" 
+                    name="email" 
+                    placeholder="your.email@example.com" 
+                    required
+                >
+                <span class="helper-text">เพื่อให้เราติดต่อกลับได้หากมีคำถาม</span>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                ส่งข้อมูล 🚀
+            </button>
+        </form>
+
+        <div class="back-link">
+            <a href="index.html">← กลับสู่หน้าหลัก</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('suggestionForm');
+        const successMessage = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'กำลังส่ง...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Show success message
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+
+                    // Scroll to top to see success message
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Real-time character counter for description
+        const descriptionTextarea = document.getElementById('description');
+        const helperText = descriptionTextarea.nextElementSibling;
+
+        descriptionTextarea.addEventListener('input', () => {
+            const currentLength = descriptionTextarea.value.length;
+            const maxLength = descriptionTextarea.getAttribute('maxlength');
+            helperText.textContent = `อธิบายสถานที่นี้ให้น่าสนใจ (${currentLength}/${maxLength} ตัวอักษร)`;
+            
+            if (currentLength > maxLength * 0.9) {
+                helperText.style.color = '#ff4757';
+            } else {
+                helperText.style.color = '#666';
+            }
+        });
+    </script>
 </body>
 </html>
