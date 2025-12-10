@@ -10,16 +10,16 @@ manager.loadFromLocalStorage();
 function renderTable(elementId: string = "studentTableBody"): void {
   const tableBody = document.getElementById(elementId)!;
   tableBody.innerHTML = "";
-  const students =manager.getAllStudents();
+  const students = manager.getAllStudents();
   showList<Student>(students);
   students.forEach((s) => {
     tableBody.innerHTML += `
       <tr>
         <td>${s.id}</td>
-        <td>แก้ไขเป็น title_name</td>
-        <td>แก้ไขเป็น first_name</td>
-        <td>แก้ไขเป็น last_name</td>
-        <td>แก้ไขเป็น email</td>
+        <td>${s.title_name}</td>
+        <td>${s.first_name}</td>
+        <td>${s.last_name}</td>
+        <td>${s.email}</td>
         <td>${s.year}</td>
         <td>${s.major}</td>
       </tr>
@@ -31,9 +31,9 @@ function renderTable(elementId: string = "studentTableBody"): void {
 (document.getElementById("addBtn") as HTMLButtonElement).onclick = () => {
   const id = (document.getElementById("id") as HTMLInputElement).value;
   const year = Number((document.getElementById("year") as HTMLInputElement).value);
-  const title_name = (document.getElementById("title_name") as HTMLInputElement).value;
+  const title_name = (document.getElementById("title") as HTMLInputElement).value;
   const first_name = (document.getElementById("first_name") as HTMLInputElement).value;
-  const last_name = (document.getElementById("last_name ") as HTMLInputElement).value;
+  const last_name = (document.getElementById("last_name") as HTMLInputElement).value;
   const email = (document.getElementById("email") as HTMLInputElement).value;
   const major = (document.getElementById("major") as HTMLInputElement).value;
 
@@ -59,12 +59,17 @@ function renderTable(elementId: string = "studentTableBody"): void {
 };
 
 
-// เพิ่มค้นหาด้วย Email
+// ค้นหาด้วย Email
+(document.getElementById("searchEmailBtn") as HTMLButtonElement).onclick = () => {
+  const keyword = (document.getElementById("searchEmail") as HTMLInputElement).value;
+  const result = manager.findStudentByEmail(keyword);
+  if (result) {
+    showList<Student>([result]);
+    alert(`พบนักศึกษา: ${result.first_name} ${result.last_name}`);
+  } else {
+    alert(`ไม่พบนักศึกษาที่มีอีเมล: ${keyword}`);
+  }
+};
 
 
 renderTable("studentTableBody");
-
-
-
-
-

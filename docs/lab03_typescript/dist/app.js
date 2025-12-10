@@ -11,10 +11,10 @@ function renderTable(elementId = "studentTableBody") {
         tableBody.innerHTML += `
       <tr>
         <td>${s.id}</td>
-        <td>แก้ไขเป็น title_name</td>
-        <td>แก้ไขเป็น first_name</td>
-        <td>แก้ไขเป็น last_name</td>
-        <td>แก้ไขเป็น email</td>
+        <td>${s.title_name}</td>
+        <td>${s.first_name}</td>
+        <td>${s.last_name}</td>
+        <td>${s.email}</td>
         <td>${s.year}</td>
         <td>${s.major}</td>
       </tr>
@@ -24,9 +24,9 @@ function renderTable(elementId = "studentTableBody") {
 document.getElementById("addBtn").onclick = () => {
     const id = document.getElementById("id").value;
     const year = Number(document.getElementById("year").value);
-    const title_name = document.getElementById("title_name").value;
+    const title_name = document.getElementById("title").value;
     const first_name = document.getElementById("first_name").value;
-    const last_name = document.getElementById("last_name ").value;
+    const last_name = document.getElementById("last_name").value;
     const email = document.getElementById("email").value;
     const major = document.getElementById("major").value;
     const student = { id, year, major, title_name, first_name, last_name, email };
@@ -45,5 +45,16 @@ document.getElementById("searchMajorBtn").onclick = () => {
     showList(results);
     alert(`พบในสาขา: ${results.length} คน`);
 };
-// เพิ่มค้นหาด้วย Email
+// ค้นหาด้วย Email
+document.getElementById("searchEmailBtn").onclick = () => {
+    const keyword = document.getElementById("searchEmail").value;
+    const result = manager.findStudentByEmail(keyword);
+    if (result) {
+        showList([result]);
+        alert(`พบนักศึกษา: ${result.first_name} ${result.last_name}`);
+    }
+    else {
+        alert(`ไม่พบนักศึกษาที่มีอีเมล: ${keyword}`);
+    }
+};
 renderTable("studentTableBody");
