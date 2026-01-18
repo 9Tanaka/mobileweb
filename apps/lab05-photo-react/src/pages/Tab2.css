@@ -1,0 +1,9 @@
+ion-fab {
+  --background: #667eea;
+  --box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  width: 70px;
+  height: 70px;
+  border-radius: 35px;
+    
+}
+
