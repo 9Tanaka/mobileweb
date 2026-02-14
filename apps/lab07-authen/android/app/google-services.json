@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:189671064674:android:3a9418ac7e17f16b6dfd3b",
+        "mobilesdk_app_id": "1:189671064674:android:32af65227207d84f6dfd3b",
         "android_client_info": {
-          "package_name": "cpkku.twachi.lab07"
+          "package_name": "kku.thanakit.lab07"
         }
       },
       "oauth_client": [],

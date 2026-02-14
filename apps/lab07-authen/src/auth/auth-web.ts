@@ -1,15 +1,23 @@
-// นำมาจากหน้าโครงการ firebase
-const firebaseConfig = {
-  apiKey: "xxxx",
-  authDomain: "xxx",
-  projectId: "xxx",
-  storageBucket: "web2025-wachi.firebasestorage.app",
-  messagingSenderId: "71907196915",
-  appId: "1:71907196915:web:f61190eb685f25e3431c86",
-  measurementId: "G-3HMD9F71XR"
-};
+// Import the functions you need from the SDKs you need
+
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+const firebaseConfig = {
+  apiKey: "AIzaSyDn7C745DPIKiVAadcVyw6iVEqkG2QRzu0",
+  authDomain: "lab07-4686a.firebaseapp.com",
+  projectId: "lab07-4686a",
+  storageBucket: "lab07-4686a.firebasestorage.app",
+  messagingSenderId: "189671064674",
+  appId: "1:189671064674:web:06f641a94b1e96b46dfd3b",
+  measurementId: "G-QRNQNYZFPC"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 import { AuthUser, IAuthService, EmailPasswordCredentials,PhoneCredentials } from "./auth-interface";
 import {
   signInWithEmailAndPassword,
@@ -30,11 +38,13 @@ function mapUser(u: any): AuthUser {
     email: u.email,
     displayName: u.displayName,
     photoUrl: u.photoURL,
+    phoneNumber: u.phoneNumber,
   };
 }
 
 
 import { RecaptchaVerifier } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 import { code } from "ionicons/icons";
 
 

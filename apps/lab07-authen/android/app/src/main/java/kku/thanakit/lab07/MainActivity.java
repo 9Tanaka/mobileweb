@@ -1,4 +1,4 @@
-package cpkku.twachi.lab07;
+package kku.thanakit.lab07;
 
 import com.getcapacitor.BridgeActivity;
 

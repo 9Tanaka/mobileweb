@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "cpkku.twachi.lab07"
+    namespace = "kku.thanakit.lab07"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "cpkku.twachi.lab07"
+        applicationId "kku.thanakit.lab07"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

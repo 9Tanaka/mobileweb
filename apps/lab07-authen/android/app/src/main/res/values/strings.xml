@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">lab07-authen</string>
     <string name="title_activity_main">lab07-authen</string>
-    <string name="package_name">cpkku.twachi.lab07</string>
-    <string name="custom_url_scheme">cpkku.twachi.lab07</string>
+    <string name="package_name">kku.thanakit.lab07</string>
+    <string name="custom_url_scheme">kku.thanakit.lab07</string>
 </resources>
