@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Authentication App - Login ที่ปลอดภัยและสะดวก</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #333;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Login Methods Section */
+        .login-methods {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .login-methods h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .login-methods .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 60px;
+            font-size: 1.2rem;
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .method-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .method-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .method-card.email {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .method-card.google {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .method-card.phone {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .method-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .method-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Security Section */
+        .security {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .security h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .security p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+        }
+
+        .security-features {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .security-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 20px 30px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            font-weight: bold;
+        }
+
+        /* Screenshots Section */
+        .screenshots {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .screenshots h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+        }
+
+        .screenshots-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .screenshot-card {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 500px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .screenshot-card h3 {
+            text-align: center;
+            color: #667eea;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .final-cta p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .features h2,
+            .login-methods h2,
+            .security h2,
+            .screenshots h2,
+            .final-cta h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>🔐 Secure Authentication App</h1>
+        <p>ระบบ Login ที่ปลอดภัย สะดวก และรองรับหลายช่องทาง</p>
+        <a href="#features" class="cta-button">เรียนรู้เพิ่มเติม</a>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2>✨ ฟีเจอร์หลัก</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>ปลอดภัยสูงสุด</h3>
+                <p>ใช้ Firebase Authentication มาตรฐานระดับโลก รักษาความปลอดภัยข้อมูลผู้ใช้ด้วยเทคโนโลยีล่าสุด</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>เข้าสู่ระบบรวดเร็ว</h3>
+                <p>Login ได้ภายในไม่กี่วินาที ไม่ว่าจะใช้วิธีไหน รองรับการใช้งานแบบ Real-time</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>ใช้งานง่าย</h3>
+                <p>UI/UX ออกแบบมาเพื่อความสะดวก เข้าใจง่าย ใช้งานได้ทันที ไม่ซับซ้อน</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>รองรับทุกแพลตฟอร์ม</h3>
+                <p>ใช้งานได้ทั้ง Web และ Mobile App (iOS & Android) ด้วยโค้ดเดียว</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <h3>จัดการ Profile</h3>
+                <p>ดูและจัดการข้อมูลส่วนตัว แสดงผลรูปโปรไฟล์ และข้อมูลผู้ใช้ได้ครบถ้วน</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <h3>Multi-Device Support</h3>
+                <p>Login ครั้งเดียว ใช้ได้หลายอุปกรณ์ Session management ที่มีประสิทธิภาพ</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Methods Section -->
+    <section class="login-methods">
+        <h2>🚀 3 วิธีการ Login</h2>
+        <p class="subtitle">เลือกวิธีที่คุณสะดวกที่สุด</p>
+        <div class="methods-grid">
+            <div class="method-card email">
+                <div class="method-icon">📧</div>
+                <h3>Email & Password</h3>
+                <p>Login แบบดั้งเดิมที่ปลอดภัย ใช้ email และ password ของคุณ</p>
+            </div>
+
+            <div class="method-card google">
+                <div class="method-icon">🔴</div>
+                <h3>Google Sign-In</h3>
+                <p>Login ด้วย Google Account ของคุณ รวดเร็วและสะดวก</p>
+            </div>
+
+            <div class="method-card phone">
+                <div class="method-icon">📱</div>
+                <h3>Phone Number (OTP)</h3>
+                <p>ยืนยันตัวตนด้วยเบอร์โทรศัพท์ รับ OTP เพื่อความปลอดภัย</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="security">
+        <h2>🛡️ ความปลอดภัยคือสิ่งสำคัญ</h2>
+        <p>เราใช้มาตรฐานความปลอดภัยระดับสูงสุดในการปกป้องข้อมูลของคุณ</p>
+        <div class="security-features">
+            <div class="security-badge">🔐 Encryption</div>
+            <div class="security-badge">✅ Two-Factor Auth</div>
+            <div class="security-badge">🔒 Secure Storage</div>
+            <div class="security-badge">🛡️ Firebase Backed</div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots">
+        <h2>📸 ภาพหน้าจอแอปพลิเคชัน</h2>
+        <div class="screenshots-grid">
+            <div class="screenshot-card">
+                <img src="project4img/lab07_1.png" alt="" class="screenshot-placeholder">
+                <h3>Login Page</h3>
+            </div>
+            <div class="screenshot-card">
+                <img src="project4img/lab07_3.png" alt="" class="screenshot-placeholder">   
+                <h3>Profile Page</h3>
+            </div>
+            <div class="screenshot-card">
+                <img src="project4img/lab07_2.png" alt="" class="screenshot-placeholder">   
+                <h3>Authentication</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="final-cta">
+        <h2>พร้อมเริ่มใช้งานแล้วหรือยัง?</h2>
+        <p>ลองใช้ระบบ Authentication ที่ปลอดภัยและสะดวกของเราวันนี้</p>
+        <a href="labauth07.apk" class="cta-button">เริ่มใช้งานเลย</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Secure Authentication App | Built with ❤️ using Ionic + Vue.js + Firebase</p>
+        <p style="margin-top: 10px; opacity: 0.6;">Lab07 - Authentication Project</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all feature cards and method cards
+        document.querySelectorAll('.feature-card, .method-card, .screenshot-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s, transform 0.6s';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
