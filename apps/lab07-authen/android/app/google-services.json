@@ -12,7 +12,20 @@
           "package_name": "kku.thanakit.lab07"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "189671064674-jk0idm5lcoo1h5cd6870d9pqv6hqk31d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kku.thanakit.lab07",
+            "certificate_hash": "6e30dd15c47fed64bb40f452ab97c9d7363542ac"
+          }
+        },
+        {
+          "client_id": "189671064674-ed1ub4atqb6hut13h06p73t26tr168cb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBjOGmKXHL0NmnSquMw72Ok2pZwKNBJunk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189671064674-e5a22rql3el7m05jnt4ankjpc5chaib6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
