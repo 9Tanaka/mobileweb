@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">lab08-ai</string>
+    <string name="title_activity_main">lab08-ai</string>
+    <string name="package_name">kku.thanakit.lab08</string>
+    <string name="custom_url_scheme">kku.thanakit.lab08</string>
+</resources>

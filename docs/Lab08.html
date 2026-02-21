@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Vision — วิเคราะห์ภาพด้วย AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+    :root {
+      --bg: #06080d;
+      --surface: #0e1219;
+      --border: rgba(255,255,255,0.06);
+      --text: #e8eaf0;
+      --text-dim: #7a829a;
+      --accent: #4af0c0;
+      --accent2: #3b82f6;
+      --glow: rgba(74,240,192,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── GRID BG ── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,240,192,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,240,192,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width:600px;height:600px;top:-200px;right:-150px;background:rgba(74,240,192,0.08); }
+    .orb-2 { width:500px;height:500px;bottom:-100px;left:-200px;background:rgba(59,130,246,0.07); }
+    .orb-3 { width:350px;height:350px;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(74,240,192,0.04); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(6,8,13,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text-dim); font-weight: 400; }
+    nav a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      border: 1px solid rgba(74,240,192,0.2);
+      background: rgba(74,240,192,0.05);
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease both;
+    }
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.4; transform:scale(0.7); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 540px;
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2rem;
+      border-radius: 12px;
+      font-family: 'Noto Sans Thai', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #38d9a9);
+      color: #06080d;
+      box-shadow: 0 0 30px rgba(74,240,192,0.25), 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(74,240,192,0.35), 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: rgba(74,240,192,0.3);
+      background: rgba(74,240,192,0.05);
+      transform: translateY(-2px);
+    }
+
+    .btn svg { width:18px; height:18px; }
+
+    /* ── MOCKUP ── */
+    .mockup-wrapper {
+      margin-top: 4rem;
+      position: relative;
+      animation: fadeUp 1s 0.5s ease both;
+    }
+    .mockup {
+      width: min(90vw, 700px);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(74,240,192,0.05);
+    }
+    .mockup-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mockup-dot:nth-child(1) { background: #ff5f57; }
+    .mockup-dot:nth-child(2) { background: #febc2e; }
+    .mockup-dot:nth-child(3) { background: #28c840; }
+    .mockup-body {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    .mockup-img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a1f2e, #141824);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(74,240,192,0.15);
+    }
+    .mockup-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .mockup-img svg { width:48px; height:48px; opacity:0.3; }
+    .mockup-result {
+      width: 100%;
+      padding: 1.2rem;
+      border-radius: 12px;
+      background: rgba(74,240,192,0.04);
+      border: 1px solid rgba(74,240,192,0.1);
+    }
+    .mockup-result .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .mockup-result .caption-text {
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+    }
+    .tag-row { display:flex; gap:0.4rem; flex-wrap:wrap; }
+    .tag {
+      padding: 0.2rem 0.7rem;
+      border-radius: 100px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      font-size: 0.75rem;
+      color: var(--accent2);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem;
+    }
+    .features h2 {
+      text-align: center;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .features .subtitle {
+      text-align: center;
+      color: var(--text-dim);
+      max-width: 500px;
+      margin: 0 auto 3.5rem;
+      font-weight: 300;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: all 0.4s ease;
+    }
+    .feature-card:hover {
+      border-color: rgba(74,240,192,0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+      font-size: 1.4rem;
+    }
+    .fi-1 { background:rgba(74,240,192,0.1); }
+    .fi-2 { background:rgba(59,130,246,0.1); }
+    .fi-3 { background:rgba(251,191,36,0.1); }
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* ── TECH STACK ── */
+    .tech {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 2rem 6rem;
+      text-align: center;
+    }
+    .tech h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+    }
+    .tech-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .tech-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+    .tech-item:hover { opacity: 1; }
+    .tech-item .icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .tech-item span {
+      font-size: 0.75rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-dim);
+    }
+
+    /* ── CTA ── */
+    .cta {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+    .cta-box {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 3.5rem 2.5rem;
+      border-radius: 24px;
+      border: 1px solid rgba(74,240,192,0.15);
+      background: linear-gradient(180deg, rgba(74,240,192,0.03), transparent);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .cta h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .cta p {
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      font-weight: 300;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+    footer a { color: var(--accent); text-decoration:none; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── TYPING ANIM ── */
+    .typing {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--accent);
+      animation: typing 2s steps(30) 1s both, blink 0.7s step-end infinite;
+      max-width: 100%;
+    }
+    @keyframes typing { from{width:0} to{width:100%} }
+    @keyframes blink { 50%{border-color:transparent} }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:640px) {
+      .hero { padding: 7rem 1.2rem 3rem; }
+      .mockup-body { padding: 1.2rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .tech-row { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">GEMINI<span>.vision</span></div>
+    <div style="display:flex;gap:1.5rem;">
+      <a href="#features">ฟีเจอร์</a>
+      <a href="#tech">เทคโนโลยี</a>
+      <a href="#download">ดาวน์โหลด</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge">Lab08 — โปรเจกต์มหาวิทยาลัย</div>
+    <h1>วิเคราะห์ภาพอัจฉริยะ<br/>ด้วย <span class="highlight">Gemini AI</span></h1>
+    <p>แอปพลิเคชัน Ionic + Vue ที่ใช้ Google Gemini Vision วิเคราะห์รูปภาพแบบเรียลไทม์ — บรรยายภาพ ตรวจจับวัตถุ และประเมินความปลอดภัย</p>
+    <div class="hero-buttons">
+      <a href="#download" class="btn btn-primary">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+        ดาวน์โหลด APK
+      </a>
+      <a href="#features" class="btn btn-secondary">ดูรายละเอียด</a>
+    </div>
+
+    <!-- MOCKUP -->
+    <div class="mockup-wrapper">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot"></div>
+          <div class="mockup-dot"></div>
+          <div class="mockup-dot"></div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-img">
+            <img src="project4img/test1.png" alt="ตัวอย่างภาพวิเคราะห์">
+          </div>
+          <div class="mockup-result">
+            <div class="label">ผลวิเคราะห์จาก AI</div>
+            <div class="caption-text typing">🐱 ภาพแมวที่มีหน้าตาคล้ายคนกำลังยิ้มแย้มและมีกระดาษโปรยสีสันสดใสอยู่รอบๆ</div>
+            <div class="tag-row" style="margin-top:0.6rem;">
+              <span class="tag">แมว</span>
+              <span class="tag">หน้าคน</span>
+              <span class="tag">มีม</span>
+              <span class="tag">ยิ้ม</span>
+              <span class="tag">กระดาษโปรย</span>
+              <span class="tag">ตลก</span>
+              <span class="tag">ภาพตัดต่อ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <h2 class="reveal">ทำอะไรได้บ้าง?</h2>
+    <p class="subtitle reveal">ฟีเจอร์หลักของแอปพลิเคชัน Gemini Vision</p>
+    <div class="feature-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-1">🔍</div>
+        <h3>บรรยายภาพอัตโนมัติ</h3>
+        <p>AI จะสร้างคำบรรยายภาพเป็นภาษาไทยสั้นๆ 1 ประโยค อธิบายสิ่งที่เห็นในภาพอย่างแม่นยำ</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-2">🏷️</div>
+        <h3>ตรวจจับวัตถุ &amp; แท็ก</h3>
+        <p>ระบุวัตถุเด่นในภาพพร้อมค่าความมั่นใจ และสร้างคีย์เวิร์ด 3-8 คำสำหรับจัดหมวดหมู่</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon fi-3">🛡️</div>
+        <h3>ประเมินความปลอดภัย</h3>
+        <p>ตรวจสอบว่าภาพมีเนื้อหาอ่อนไหวหรือไม่ พร้อมหมายเหตุอธิบายเพิ่มเติมจาก AI</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH -->
+  <section class="tech" id="tech">
+    <h2 class="reveal">เทคโนโลยีที่ใช้</h2>
+    <div class="tech-row reveal">
+      <div class="tech-item">
+        <div class="icon-box">⚡</div>
+        <span>Ionic</span>
+      </div>
+      <div class="tech-item">
+        <div class="icon-box">💚</div>
+        <span>Vue 3</span>
+      </div>
+      <div class="tech-item">
+        <div class="icon-box">🔥</div>
+        <span>Firebase</span>
+      </div>
+      <div class="tech-item">
+        <div class="icon-box">✨</div>
+        <span>Gemini AI</span>
+      </div>
+      <div class="tech-item">
+        <div class="icon-box">📱</div>
+        <span>Capacitor</span>
+      </div>
+      <div class="tech-item">
+        <div class="icon-box">🟦</div>
+        <span>TypeScript</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / DOWNLOAD -->
+  <section class="cta" id="download">
+    <div class="cta-box reveal">
+      <h2>พร้อมลองใช้งานแล้ว!</h2>
+      <p>ดาวน์โหลดไฟล์ APK เพื่อติดตั้งบนอุปกรณ์ Android ของคุณ<br/>หรือรันผ่านเว็บเบราว์เซอร์ได้ทันที</p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="gemini-vision.apk" download class="btn btn-primary" id="downloadBtn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+          ดาวน์โหลด APK
+        </a>
+        <a href="https://github.com/9Tanaka/mobileweb" target="_blank" class="btn btn-secondary">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          ดู Source Code
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>โปรเจกต์ Lab08 — จัดทำโดย <strong>ธนกฤต จิตจักร์</strong> · พัฒนาด้วย Ionic + Vue + Gemini AI</p>
+    <p style="margin-top:0.3rem;opacity:0.6;">© 2025 วิชา Mobile Application Development</p>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
