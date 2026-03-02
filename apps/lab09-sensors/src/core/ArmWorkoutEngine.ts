@@ -51,6 +51,7 @@ export class ArmWorkoutEngine {
       status: "RUNNING",
       repDisplay: 0,
       stats: { repsTotal: 0, repsOk: 0, repsBad: 0, score: 0, avgRepMs: 0 },
+      accel: { ax: 0, ay: 0, az: 0, t: 0 },
     };
     this.phase = "WAIT_UP";
     this.peak = 0;
@@ -73,6 +74,10 @@ export class ArmWorkoutEngine {
 
  
   private process(sample: AccelSample) {
+    if (sample.t - (this.state.accel?.t ?? 0) > 100) {
+  this.state.accel = sample;
+  this.emit();
+}
     if (this.state.status !== "RUNNING") return;
 
     const y = sample.ay;
@@ -135,7 +140,8 @@ export class ArmWorkoutEngine {
       this.state.stats.avgRepMs = Math.round(
         (this.state.stats.avgRepMs + repMs) / 2
       );
-      this.haptic.success();         
+      this.haptic.success();  
+      this.tts.speak(`${this.state.repDisplay}`);       
     } else {
       this.state.stats.repsBad++;
       this.haptic.warning();
@@ -145,13 +151,28 @@ export class ArmWorkoutEngine {
     this.state.stats.lastMessage = "ครบ 20 ครั้ง! เสร็จสิ้น";
     this.tts.speak("ครบ 20 ครั้งแล้ว เสร็จสิ้นการออกกำลังกาย");
     this.motion.stop();
-    this.state.status = "STOPPED";
+    this.state.status = "FINISHED";
     }
 
     this.state.stats.lastMessage = msg;
+
+    if (this.state.repDisplay >= 20) {
+    this.finish();
+    return;  // stop here, finish() handles the rest
+}
   }
 
+private async finish() {
+  await this.motion.stop();
+  this.state.status = "FINISHED";
 
+  const s = this.state.stats;
+  const msg = `เสร็จสิ้น ทำได้ ${s.repsOk} ครั้ง จาก ${s.repsTotal} ครั้ง คะแนน ${s.score}`;
+  this.state.stats.lastMessage = msg;
+  await this.tts.speak(msg);
+
+  this.emit();
+}
 
   private emit() {
     const snap = this.clone();

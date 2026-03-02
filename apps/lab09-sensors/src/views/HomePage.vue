@@ -56,16 +56,37 @@
           <div class="stat-value good">{{ state?.stats.repsOk ?? 0 }}</div>
           <div class="stat-label">สำเร็จ</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value bad">{{ state?.stats.repsBad ?? 0 }}</div>
-          <div class="stat-label">ผิดท่า</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value dim">{{ avgSec }}</div>
-          <div class="stat-label">วินาที/ครั้ง</div>
-        </div>
       </div>
-
+ <!-- Realtime Sensor Data -->
+<div class="accel-card" v-if="isRunning || isStopped">
+  <div class="accel-header">
+    <span class="accel-icon">📡</span>
+    <span>SENSOR DATA</span>
+  </div>
+  <div class="accel-bars">
+    <div class="accel-row">
+      <span class="accel-axis x">X</span>
+      <div class="accel-bar-track">
+        <div class="accel-bar-fill x" :style="{ width: barWidth(state?.accel?.ax) }"></div>
+      </div>
+      <span class="accel-val">{{ state?.accel?.ax?.toFixed(2) ?? '0.00' }}</span>
+    </div>
+    <div class="accel-row">
+      <span class="accel-axis y">Y</span>
+      <div class="accel-bar-track">
+        <div class="accel-bar-fill y" :style="{ width: barWidth(state?.accel?.ay) }"></div>
+      </div>
+      <span class="accel-val">{{ state?.accel?.ay?.toFixed(2) ?? '0.00' }}</span>
+    </div>
+    <div class="accel-row">
+      <span class="accel-axis z">Z</span>
+      <div class="accel-bar-track">
+        <div class="accel-bar-fill z" :style="{ width: barWidth(state?.accel?.az) }"></div>
+      </div>
+      <span class="accel-val">{{ state?.accel?.az?.toFixed(2) ?? '0.00' }}</span>
+    </div>
+  </div>
+</div>
   
       <div class="controls">
         <button
@@ -88,6 +109,41 @@
       <div class="footer-info">
         673380218-7 นายธนกฤต จิตจักร์
       </div>
+
+      <div class="summary-overlay" v-if="state?.status === 'FINISHED'">
+  <!-- Summary Overlay -->
+<div class="summary-overlay" v-if="state?.status === 'FINISHED'">
+  <div class="summary-backdrop"></div>
+  <div class="summary-card">
+    <div class="summary-emoji">🎉</div>
+    <h2 class="summary-title">สรุปผล</h2>
+
+    <div class="summary-stats">
+      <div class="summary-row">
+        <span class="summary-label">ทั้งหมด</span>
+        <span class="summary-value">{{ state.stats.repsTotal }} ครั้ง</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">สำเร็จ</span>
+        <span class="summary-value good">{{ state.stats.repsOk }} ครั้ง</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">ผิดท่า</span>
+        <span class="summary-value bad">{{ state.stats.repsBad }} ครั้ง</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row big">
+        <span class="summary-label">คะแนน</span>
+        <span class="summary-value accent">{{ state.stats.score }}</span>
+      </div>
+    </div>
+
+    <button class="btn-restart" @click="handleStart">
+      🔄 เริ่มใหม่
+    </button>
+  </div>
+</div>
+</div>
     </ion-content>
   </ion-page>
 </template>
@@ -144,7 +200,11 @@ const statusLabel = computed(() => {
     default: return "○ พร้อม";
   }
 });
-
+function barWidth(val?: number): string {
+  const v = val ?? 0;
+  const pct = Math.min(Math.abs(v) / 20 * 100, 100);
+  return `${pct}%`;
+}
 const feedbackClass = computed(() => {
   if (!state.value?.stats.lastMessage) return "neutral";
   return state.value.stats.lastMessage === "OK" ? "good" : "bad";
@@ -175,6 +235,9 @@ const progressOffset = computed(() => {
   --background: #0a0a0f;
   --color: #f0f0f5;
   font-family: "SF Pro Display", "Prompt", -apple-system, sans-serif;
+   display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .bg-layer {
@@ -186,7 +249,96 @@ const progressOffset = computed(() => {
   pointer-events: none;
   z-index: 0;
 }
+/* ── Summary Overlay ── */
+.summary-overlay {
+  position: fixed;
+  inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fade-in 0.3s ease;
+}
 
+.summary-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.summary-card {
+  position: relative;
+  width: 100%; max-width: 320px;
+  background: linear-gradient(145deg, #1a1a2e, #16162a);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.summary-emoji {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.summary-title {
+  font-size: 20px; font-weight: 800;
+  color: #f0f0f5;
+  margin: 0 0 24px;
+  letter-spacing: 1px;
+}
+
+.summary-stats {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 4px;
+}
+
+.summary-row.big {
+  padding-top: 4px;
+}
+
+.summary-label {
+  font-size: 14px; color: #888;
+}
+
+.summary-value {
+  font-size: 16px; font-weight: 700; color: #f0f0f5;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-value.good  { color: #34d399; }
+.summary-value.bad   { color: #fb7185; }
+.summary-value.accent { font-size: 28px; color: #818cf8; }
+
+.summary-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 4px 0;
+}
+
+.btn-restart {
+  margin-top: 24px;
+  width: 100%;
+  padding: 14px;
+  border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+}
+
+.btn-restart:active { transform: scale(0.97); }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 /* ── Header ── */
 .header-bar {
   position: relative; z-index: 1;
@@ -236,7 +388,7 @@ const progressOffset = computed(() => {
 .feedback-icon { font-size: 16px; font-weight: 800; }
 
 /* ── Stats ── */
-.stats-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; padding: 0 20px 24px; }
+.stats-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 0 20px 24px; }
 .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 8px; text-align: center; }
 .stat-value { font-size: 24px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .stat-value.accent { color: #818cf8; }
@@ -259,7 +411,68 @@ const progressOffset = computed(() => {
 .btn-stop:active:not(.disabled) { transform: scale(0.97); background: rgba(251,113,133,0.12); color: #fb7185; }
 .btn-start.disabled, .btn-stop.disabled { opacity: 0.35; pointer-events: none; }
 .btn-icon { font-size: 12px; }
+/* ── Accel Sensor Card ── */
+.accel-card {
+  position: relative; z-index: 1;
+  margin: 0 20px 20px;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  animation: fade-in 0.3s ease;
+}
 
+.accel-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; color: #555;
+  margin-bottom: 14px;
+}
+
+.accel-icon { font-size: 14px; }
+
+.accel-bars { display: flex; flex-direction: column; gap: 10px; }
+
+.accel-row {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.accel-axis {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 800;
+}
+
+.accel-axis.x { background: rgba(251,113,133,0.15); color: #fb7185; }
+.accel-axis.y { background: rgba(52,211,153,0.15); color: #34d399; }
+.accel-axis.z { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+.accel-bar-track {
+  flex: 1; height: 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.accel-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.1s ease;
+}
+
+.accel-bar-fill.x { background: linear-gradient(90deg, #fb7185, #f43f5e); }
+.accel-bar-fill.y { background: linear-gradient(90deg, #34d399, #10b981); }
+.accel-bar-fill.z { background: linear-gradient(90deg, #818cf8, #6366f1); }
+
+.accel-val {
+  width: 52px;
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #a0a0b8;
+  text-align: right;
+  font-family: monospace;
+}
 /* ── Footer ── */
 .footer-info { position: relative; z-index: 1; text-align: center; padding: 12px 20px 24px; font-size: 11px; color: #333; }
 

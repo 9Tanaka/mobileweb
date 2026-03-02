@@ -15,8 +15,9 @@ export interface WorkoutStats {
 }
 
 export interface WorkoutState {
-  status: "IDLE" | "CALIBRATING" | "RUNNING" | "STOPPED";
+  status: "IDLE" | "CALIBRATING" | "RUNNING" | "STOPPED" | "FINISHED";
   repDisplay: number;
   stats: WorkoutStats;
+  accel?: AccelSample;
 }
 
