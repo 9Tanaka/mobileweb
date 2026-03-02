@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARM WORKOUT — Lab09 Sensors</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Noto+Sans+Thai:wght@300;400;600;700;800&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #06060c;
+      --surface: #0e0e1a;
+      --border: rgba(255,255,255,0.06);
+      --text: #e8e8f0;
+      --text-dim: #6a6a80;
+      --indigo: #818cf8;
+      --indigo-glow: rgba(99,102,241,0.4);
+      --green: #34d399;
+      --pink: #fb7185;
+      --cyan: #22d3ee;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans Thai', 'Outfit', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    /* ── Grain Overlay ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(129,140,248,0.3); border-radius: 3px; }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(6,6,12,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px; font-weight: 800;
+      letter-spacing: 3px; color: var(--indigo);
+    }
+
+    .nav-links { display: flex; gap: 28px; }
+
+    .nav-links a {
+      color: var(--text-dim); text-decoration: none;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 1px;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--indigo); }
+
+    /* ── Hero Section ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+    }
+
+    /* Animated background orbs */
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      top: -200px; right: -150px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      bottom: -100px; left: -150px;
+      background: radial-gradient(circle, rgba(236,72,153,0.1), transparent 70%);
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -40px) scale(1.1); }
+    }
+
+    .hero-badge {
+      position: relative; z-index: 1;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px;
+      border-radius: 50px;
+      background: rgba(129,140,248,0.08);
+      border: 1px solid rgba(129,140,248,0.15);
+      font-size: 12px; font-weight: 600;
+      color: var(--indigo);
+      letter-spacing: 1.5px;
+      margin-bottom: 32px;
+      animation: fade-down 0.8s ease both;
+    }
+
+    .hero-badge::before {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      position: relative; z-index: 1;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+      animation: fade-down 0.8s ease 0.15s both;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--indigo), var(--cyan), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      position: relative; z-index: 1;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: clamp(14px, 2vw, 18px);
+      font-weight: 400;
+      color: var(--text-dim);
+      max-width: 500px;
+      margin: 16px auto 40px;
+      animation: fade-down 0.8s ease 0.3s both;
+    }
+
+    .hero-cta {
+      position: relative; z-index: 1;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 36px;
+      border: none; border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      color: #fff;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 1px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 30px var(--indigo-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fade-down 0.8s ease 0.45s both;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px var(--indigo-glow);
+    }
+
+    /* ── Section Common ── */
+    section {
+      position: relative;
+      padding: 100px 24px;
+    }
+
+    .section-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; color: var(--indigo);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 15px; color: var(--text-dim);
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    /* ── Features ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(129,140,248,0.2);
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon.motion  { background: rgba(99,102,241,0.12); }
+    .feature-icon.haptic  { background: rgba(52,211,153,0.12); }
+    .feature-icon.tts     { background: rgba(251,113,133,0.12); }
+    .feature-icon.form    { background: rgba(34,211,238,0.12); }
+
+    .feature-card h3 {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 13px; color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    /* ── Architecture ── */
+    .arch-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .arch-flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .arch-box {
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .arch-box.ui       { background: rgba(99,102,241,0.12); color: var(--indigo); border: 1px solid rgba(99,102,241,0.2); }
+    .arch-box.engine   { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .arch-box.service  { background: rgba(251,113,133,0.08); color: var(--pink); border: 1px solid rgba(251,113,133,0.15); }
+
+    .arch-arrow {
+      font-size: 20px; color: var(--text-dim);
+    }
+
+    .arch-services {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    }
+
+    /* ── Demo Video ── */
+    #demo {
+      background: linear-gradient(180deg, transparent, rgba(99,102,241,0.03), transparent);
+    }
+
+    .video-container {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      aspect-ratio: 16/9;
+    }
+
+    .video-container video,
+    .video-container iframe {
+      width: 100%; height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Placeholder when no video yet */
+    .video-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px;
+      background: linear-gradient(145deg, #0e0e1a, #12122a);
+    }
+
+    .video-placeholder-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(129,140,248,0.1);
+      border: 2px solid rgba(129,140,248,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      transition: transform 0.3s, background 0.3s;
+      cursor: pointer;
+    }
+
+    .video-placeholder-icon:hover {
+      transform: scale(1.1);
+      background: rgba(129,140,248,0.2);
+    }
+
+    .video-placeholder p {
+      font-size: 13px; color: var(--text-dim);
+    }
+
+    .video-note {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* ── Tech Stack ── */
+    .tech-pills {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+
+    .tech-pill {
+      padding: 10px 20px;
+      border-radius: 50px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 13px; font-weight: 600;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 8px;
+      transition: border-color 0.3s, color 0.3s;
+    }
+
+    .tech-pill:hover {
+      border-color: rgba(129,140,248,0.3);
+      color: var(--text);
+    }
+
+    .tech-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot.ionic    { background: #3880ff; }
+    .dot.capacitor { background: #53b9ff; }
+    .dot.vue      { background: #42b883; }
+    .dot.ts       { background: #3178c6; }
+    .dot.firebase { background: #ffca28; }
+    .dot.android  { background: #3ddc84; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 48px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-name {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .footer-id {
+      font-size: 13px; color: var(--text-dim);
+      font-family: 'Chakra Petch', monospace;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .footer-course {
+      font-size: 12px; color: #444;
+    }
+
+    /* ── Animations ── */
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      nav { padding: 14px 20px; }
+      .nav-links { gap: 16px; }
+      .nav-links a { font-size: 11px; }
+      section { padding: 64px 16px; }
+      .arch-flow { flex-direction: column; }
+      .arch-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-logo">💪 ARM WORKOUT</div>
+    <div class="nav-links">
+      <a href="#features">FEATURES</a>
+      <a href="#arch">ARCHITECTURE</a>
+      <a href="#demo">DEMO</a>
+      <a href="#tech">TECH</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">LAB09 — SENSORS</div>
+    <h1><span class="gradient-text">ARM WORKOUT</span></h1>
+    <h1>SENSOR APP</h1>
+    <p class="hero-sub">
+      แอปออกกำลังกายแขน ใช้เซ็นเซอร์ Accelerometer ตรวจจับท่าทาง
+      พร้อมระบบนับครั้ง ตรวจฟอร์ม และ Feedback แบบเรียลไทม์
+    </p>
+    <a href="#demo" class="hero-cta">▶ ดูวิดีโอสาธิต</a>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="section-inner reveal">
+      <div class="section-tag">FEATURES</div>
+      <h2 class="section-title">ฟีเจอร์หลัก</h2>
+      <p class="section-desc">ใช้เซ็นเซอร์ในมือถือร่วมกับ Rule-based Algorithm เพื่อนับและตรวจสอบท่าออกกำลังกายแบบเรียลไทม์</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon motion">📱</div>
+          <h3>Accelerometer Detection</h3>
+          <p>ใช้ข้อมูลจาก Accelerometer (แกน X, Y, Z) ตรวจจับการเคลื่อนไหวของแขน ผ่าน State Machine สองสถานะ WAIT_UP → WAIT_DOWN</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon form">🎯</div>
+          <h3>Form Checking</h3>
+          <p>ตรวจสอบฟอร์ม 4 ด้าน: Range of Motion, ความเร็ว (ไม่เร็ว/ช้าเกินไป), ทิศทางแนวตั้ง และจำนวนครั้งเป้าหมาย 20 ครั้ง</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon tts">🔊</div>
+          <h3>Text-to-Speech</h3>
+          <p>พูดนับจำนวนครั้งเป็นภาษาไทย และแจ้งเตือนเมื่อฟอร์มไม่ถูกต้อง เช่น "ยกแขนต่ำเกินไป" หรือ "เร็วเกินไป"</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon haptic">📳</div>
+          <h3>Haptic Feedback</h3>
+          <p>สั่นแจ้งเตือนแบบ Success เมื่อทำถูก และ Warning เมื่อฟอร์มผิด ผู้ใช้รับรู้ได้ทันทีโดยไม่ต้องมองหน้าจอ</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="arch">
+    <div class="section-inner reveal">
+      <div class="section-tag">ARCHITECTURE</div>
+      <h2 class="section-title">โครงสร้างระบบ</h2>
+      <p class="section-desc">UI ไม่เรียก Capacitor Plugin โดยตรง — ทุกอย่างผ่าน ArmWorkoutEngine เพียงตัวเดียว</p>
+
+      <div class="arch-diagram">
+        <div class="arch-flow">
+          <div class="arch-box ui">🖥️ HomePage.vue</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-box engine">⚙️ ArmWorkoutEngine</div>
+          <span class="arch-arrow">→</span>
+          <div class="arch-services">
+            <div class="arch-box service">📱 MotionService</div>
+            <div class="arch-box service">🔊 TtsService</div>
+            <div class="arch-box service">📳 HapticsService</div>
+          </div>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: var(--text-dim);">
+          UI เรียกแค่ <code style="color: var(--green);">engine.start()</code>,
+          <code style="color: var(--pink);">engine.stop()</code>,
+          <code style="color: var(--indigo);">engine.onChange()</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Video -->
+  <section id="demo">
+    <div class="section-inner reveal">
+      <div class="section-tag">DEMO</div>
+      <h2 class="section-title">วิดีโอสาธิต</h2>
+      <p class="section-desc">ดูการทำงานจริงของแอปบนมือถือ Android</p>
+
+      <div class="video-container">
+
+         <video controls poster="thumbnail.jpg">
+            <source src="demo.mp4" type="video/mp4" />
+          </video>
+        <!--
+          ═══════════════════════════════════════════════
+          ใส่วิดีโอตรงนี้ — เลือกวิธีใดวิธีหนึ่ง:
+
+          วิธี 1: ไฟล์วิดีโอ (.mp4)
+          <video controls poster="thumbnail.jpg">
+            <source src="demo.mp4" type="video/mp4" />
+          </video>
+
+          วิธี 2: YouTube embed
+          <iframe src="https://www.youtube.com/embed/VIDEO_ID"
+            allowfullscreen></iframe>
+
+          วิธี 3: Google Drive embed
+          <iframe src="https://drive.google.com/file/d/1LjPAv64PRuyW6T33afgJsQObU9tiyuNC/view?usp=sharing"
+            allow="autoplay"></iframe>
+          ═══════════════════════════════════════════════
+        -->
+
+        <!-- Placeholder — ลบส่วนนี้เมื่อใส่วิดีโอจริง -->
+        <div class="video-placeholder">
+          <div class="video-placeholder-icon">▶</div>
+          <p>ใส่ไฟล์วิดีโอหรือ YouTube link ตรงนี้</p>
+        </div>
+      </div>
+
+      <p class="video-note">* ทดสอบบนมือถือจริง — Emulator ไม่มี Accelerometer</p>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="tech">
+    <div class="section-inner reveal" style="text-align: center;">
+      <div class="section-tag">TECH STACK</div>
+      <h2 class="section-title">เทคโนโลยีที่ใช้</h2>
+
+      <div class="tech-pills">
+        <div class="tech-pill"><span class="dot ionic"></span>Ionic Framework</div>
+        <div class="tech-pill"><span class="dot capacitor"></span>Capacitor</div>
+        <div class="tech-pill"><span class="dot vue"></span>Vue 3</div>
+        <div class="tech-pill"><span class="dot ts"></span>TypeScript</div>
+        <div class="tech-pill"><span class="dot android"></span>Android</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-name">นายธนกฤต จิตจักร์</div>
+    <div class="footer-id">673380218-7</div>
+    <div class="footer-course">Lab09 Sensors — Mobile Application Development</div>
+  </footer>
+
+  <!-- Scroll Reveal Script -->
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
